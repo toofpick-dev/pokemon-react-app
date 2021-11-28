@@ -1,5 +1,5 @@
-import { Grid } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { Box, CircularProgress, Grid } from "@mui/material";
+import { useEffect, useRef, useState, useCallback, RefObject  } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllPokemons, getPokemonListByURL } from "../api/pokemon.service";
 import { setPokemons , selectedPokemon } from "../redux/actions/pokemonActions";
@@ -20,13 +20,16 @@ export default function PokemonListing() {
 
     const dispatch = useDispatch();
 
+    const observer : any = useRef(null)
+
+    const [isLoading, setIsLoading] = useState(true);
+
     const [raisedCard, setRaisedCard] = useState(null);
 
     const [nextUrl, setNextUrl] = useState("");
 
-    const [loadNextPage, setLoadNextPage] = useState(false);
-
     const [open, setOpen] = useState(false);
+
     const handleOpen = (pokemon : any) => {
         dispatch(selectedPokemon(pokemon));
         setOpen(true)
@@ -36,31 +39,10 @@ export default function PokemonListing() {
     };
 
     const pokemons = useSelector((state : any) => {
+        console.log("----------------- pokemon list --------------")
+
         return [...state.allPokemons.pokemons]
     });
-
-    const loader = useRef(null);
-
-    useEffect(() => {
-         var options = {
-            root: null,
-            rootMargin: "20px",
-            threshold: 1.0
-         };
-       
-         const observer = new IntersectionObserver(handleObserver, options);
-         console.log(loader)
-         if (loader.current) {
-            observer.observe(loader.current)
-         }
-
-    }, []);
-
-    useEffect(() => {
-        if(loadNextPage){
-            loadPokemonNextPage();
-        }
-   }, [loadNextPage]);
 
     useEffect( () => {
         getPokemons();
@@ -69,34 +51,32 @@ export default function PokemonListing() {
      const getPokemons = async () => {
         try {
             const allPokemons : any = await fetchAllPokemons(12 , 0);
-           
-            if(allPokemons.data.next){
-                setNextUrl(allPokemons.data.next)
-            }
+            setNextUrl(allPokemons.data.next)
             dispatch(setPokemons(allPokemons.data.results));
+            setIsLoading(false)
         }catch(error){
             console.log(error)
         }
     }
 
-    const handleObserver = (entities : any) => {
-        const target = entities[0];
-        if (target.isIntersecting) {   
-            console.log("---------------- scroll --------------")
-            setLoadNextPage(true)
+    const lastBookElementRef = useCallback(node => {
+        if (isLoading) return
+        if (observer.current) observer.current.disconnect()
+        observer.current = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && nextUrl) {
+            setIsLoading(true)
+            loadPokemonNextPage()
         }
-    }
+        })
+        if (node) observer.current.observe(node)
+    }, [ isLoading , nextUrl])
 
     const loadPokemonNextPage = async () => {
-        console.log(pokemons)
-
-        console.log(nextUrl)
         if(nextUrl){
             const nextPagePokemons : any = await getPokemonListByURL(nextUrl);
             dispatch(setPokemons([...pokemons,...nextPagePokemons.data.results]))
-            if(nextPagePokemons.data.next){
-                setNextUrl(nextPagePokemons.data.next)
-            }
+            setNextUrl(nextPagePokemons.data.next)
+            setIsLoading(false)
         }
     }
 
@@ -107,7 +87,7 @@ export default function PokemonListing() {
 
     const renderList = pokemons.map((pokemon : any , index : number) => {
         return (
-            <Grid container direction="row" justifyContent="center" alignItems="center" className="card-container" item xs={2} sm={4} md={4} key={index} >
+            <Grid ref={ index + 1 === pokemons.length ? lastBookElementRef : null} container direction="row" justifyContent="center" alignItems="center" className="card-container" item xs={2} sm={4} md={4} key={index} >
                 <Card onClick={() => handleOpen(pokemon)} style={{backgroundColor: "#FBF46D"}} className="pokemon-card" onMouseEnter = {() => onCardHover(index)} onMouseLeave = {() => onCardHover(null)} raised={index === raisedCard} sx={{ maxWidth: 250 }}>
                     <CardMedia
                         className = "card-image"
@@ -133,9 +113,11 @@ export default function PokemonListing() {
                 {renderList}
             </Grid>
 
-            {/* <div className="loading" ref={loader}>
-                    <h2>Load More</h2>
-            </div> */}
+           { isLoading && <Box sx={{display: 'flex',flexDirection: 'row',alignItems: 'center' ,justifyContent: 'center'}}>
+                    <div>
+                        <CircularProgress />
+                    </div>
+            </Box >}
 
         <Modal
             open={open}

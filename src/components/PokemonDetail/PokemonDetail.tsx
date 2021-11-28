@@ -46,6 +46,7 @@ const style : SxProps<Theme> = {
 export default function PokemonDetail() {
 
     const pokemon = useSelector((state : any) => {
+        console.log("----------------- pokemon detail --------------")
         return {...state.pokemon}
     });
 
@@ -89,11 +90,11 @@ export default function PokemonDetail() {
 
     return (
         <Box sx={style}>
-            {!isLoading ?
+            {!isLoading && imgSrc ?
                 <div style={{background: `radial-gradient(circle at 50% 0%, ${themeColor} 36%, #ffffff 36%)`}} id="card">
-                <p className="hp">
-                    <span>HP</span>
-                    {hp}
+                    <p className="hp">
+                        <span>HP </span>
+                        {hp}
                     </p>
                     <img src={imgSrc} />
                     <h2 className="poke-name">{pokeName}</h2>
