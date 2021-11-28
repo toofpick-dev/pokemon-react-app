@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Grid } from "@mui/material";
-import { useEffect, useRef, useState, useCallback, RefObject  } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllPokemons, getPokemonListByURL } from "../api/pokemon.service";
 import { setPokemons , selectedPokemon } from "../redux/actions/pokemonActions";
@@ -12,9 +12,10 @@ import Typography from '@mui/material/Typography'
 import PokemonBall from "../assets/pokemon-ball.svg";
 import Modal from '@mui/material/Modal';
 
-
 import "./PokemonListing.scss";
 import PokemonDetail from "../components/PokemonDetail/PokemonDetail";
+import { PokemonList } from "../common/models/pokemon.model";
+import { colorPalette } from "../common/utils/constants";
 
 export default function PokemonListing() {
 
@@ -24,13 +25,13 @@ export default function PokemonListing() {
 
     const [isLoading, setIsLoading] = useState(true);
 
-    const [raisedCard, setRaisedCard] = useState(null);
+    const [raisedCard, setRaisedCard] = useState(-1);
 
     const [nextUrl, setNextUrl] = useState("");
 
     const [open, setOpen] = useState(false);
 
-    const handleOpen = (pokemon : any) => {
+    const handleOpen = (pokemon : PokemonList) => {
         dispatch(selectedPokemon(pokemon));
         setOpen(true)
     };
@@ -38,9 +39,7 @@ export default function PokemonListing() {
         setOpen(false)
     };
 
-    const pokemons = useSelector((state : any) => {
-        console.log("----------------- pokemon list --------------")
-
+    const pokemons : PokemonList[] = useSelector((state : {allPokemons : {pokemons : PokemonList[] } , pokemon : PokemonList}) => {
         return [...state.allPokemons.pokemons]
     });
 
@@ -80,15 +79,15 @@ export default function PokemonListing() {
         }
     }
 
-    const onCardHover = (index : any) => {
+    const onCardHover = (index : number) => {
         setRaisedCard(index)
     }
 
 
-    const renderList = pokemons.map((pokemon : any , index : number) => {
+    const renderList = pokemons.map((pokemon : PokemonList , index : number) => {
         return (
             <Grid ref={ index + 1 === pokemons.length ? lastBookElementRef : null} container direction="row" justifyContent="center" alignItems="center" className="card-container" item xs={2} sm={4} md={4} key={index} >
-                <Card onClick={() => handleOpen(pokemon)} style={{backgroundColor: "#FBF46D"}} className="pokemon-card" onMouseEnter = {() => onCardHover(index)} onMouseLeave = {() => onCardHover(null)} raised={index === raisedCard} sx={{ maxWidth: 250 }}>
+                <Card onClick={() => handleOpen(pokemon)} style={{backgroundColor: colorPalette.card}} className="pokemon-card" onMouseEnter = {() => onCardHover(index)} onMouseLeave = {() => onCardHover(-1)} raised={index === raisedCard} sx={{ maxWidth: 250 }}>
                     <CardMedia
                         className = "card-image"
                         component="img"
@@ -97,7 +96,7 @@ export default function PokemonListing() {
                         image={PokemonBall}
                     />
                     <CardContent>
-                        <Typography style={{fontFamily: "VT323"}} className="text" gutterBottom variant="h3" component="div">
+                        <Typography style={{fontFamily: "VT323" , color:"#ffffff"}} className="text" gutterBottom variant="h3" component="div">
                             {pokemon.name}
                         </Typography>
                     </CardContent>

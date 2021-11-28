@@ -1,4 +1,4 @@
-import './App.css';
+import './App.scss';
 import PokemonListing from './pages/PokemonListing';
 
 function App() {

@@ -1,8 +1,9 @@
+@import "./themes/variables";
 
 .App {
   width: 100vw;
   height: 100vh;
-  background-color:#FFCE45;
+  background-color: $color-background;
   margin: 0px !important;
   overflow-y: scroll;
 }

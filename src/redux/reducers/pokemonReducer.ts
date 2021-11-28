@@ -1,8 +1,7 @@
 import { ActionTypes } from "../constants/action-types";
 
 const intialState = {
-  pokemons: [],
-  pokemon: {}
+  pokemons: []
 };
 
 export const pokemonsReducer = (state = intialState, { type  , payload   } : {type : string , payload :any} ) => {

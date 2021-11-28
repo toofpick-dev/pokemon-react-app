@@ -1,9 +1,10 @@
 import { Box, CircularProgress } from "@mui/material";
-import Typography from '@mui/material/Typography'
 import { SxProps, Theme } from "@mui/system";
 import { useEffect ,useState } from "react";
 import { useSelector } from "react-redux";
 import { getPokemonListByURL } from "../../api/pokemon.service";
+import { PokemonList } from "../../common/models/pokemon.model";
+import { typeColor } from "../../common/utils/constants";
 import "./PokemonDetail.scss";
 
 const style : SxProps<Theme> = {
@@ -13,8 +14,6 @@ const style : SxProps<Theme> = {
     transform: 'translate(-50%, -50%)',
     width: 350,
     bgcolor: 'background.paper',
-    // border: '2px solid #000',
-    // boxShadow: 24,
     p: 4,
     padding: 0,
     display: 'flex',
@@ -23,34 +22,11 @@ const style : SxProps<Theme> = {
     justifyContent: 'center'
   };
 
-  const typeColor : any = {
-    bug: "#26de81",
-    dragon: "#ffeaa7",
-    electric: "#fed330",
-    fairy: "#FF0069",
-    fighting: "#30336b",
-    fire: "#f0932b",
-    flying: "#81ecec",
-    grass: "#00b894",
-    ground: "#EFB549",
-    ghost: "#a55eea",
-    ice: "#74b9ff",
-    normal: "#95afc0",
-    poison: "#6c5ce7",
-    psychic: "#a29bfe",
-    rock: "#2d3436",
-    water: "#0190FF",
-  };
-
-
 export default function PokemonDetail() {
 
-    const pokemon = useSelector((state : any) => {
-        console.log("----------------- pokemon detail --------------")
+    const pokemon = useSelector((state : {allPokemons : {pokemons : PokemonList[] } , pokemon : PokemonList}) => {
         return {...state.pokemon}
     });
-
-    const [pokemonObj, setPokemonObj] = useState({});
 
     const [hp, sethp] = useState(null)
     const [imgSrc, setimgSrc] = useState("")
@@ -70,8 +46,6 @@ export default function PokemonDetail() {
      const getPokemon = async () => {
         try {
             const pokemonDetails : any = await getPokemonListByURL(pokemon.url);
-
-            setPokemonObj(pokemonDetails.data);
             sethp(pokemonDetails.data.stats[0].base_stat);
             setimgSrc(pokemonDetails.data.sprites.other.dream_world.front_default) ;
             setpokeName(pokemonDetails.data.name[0].toUpperCase() + pokemonDetails.data.name.slice(1));
